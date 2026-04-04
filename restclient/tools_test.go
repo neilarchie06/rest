@@ -52,7 +52,7 @@ func assertError(t *testing.T, err error, message string) {
 }
 
 // AssertEquals uses the equality operator (==) to measure one and two
-func assertEquals(t *testing.T, one interface{}, two interface{}) {
+func assertEquals(t *testing.T, one any, two any) {
 	t.Helper()
 	if one != two {
 		t.Fatalf("%s [%v] != [%v]", caller(), one, two)

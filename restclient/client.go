@@ -28,9 +28,23 @@ const Version = "2.12.0"
 var ua string
 
 func init() {
-	gv := strings.Replace(runtime.Version(), "go", "", 1)
+	gv := normalizedGoVersion(runtime.Version())
 	ua = fmt.Sprintf("rest-client/%s (https://github.com/kevinburke/rest) go/%s (%s/%s)",
 		Version, gv, runtime.GOOS, runtime.GOARCH)
+}
+
+// normalizedGoVersion normalizes typical runtime.Version inputs like
+// "go1.25.1" and "devel go1.27-devel_affadc7997 Wed Apr 1 20:07:33 2026
+// -0700" for use in the User-Agent string.
+func normalizedGoVersion(version string) string {
+	version = strings.TrimSpace(version)
+	if strings.HasPrefix(version, "devel ") {
+		fields := strings.Fields(version)
+		if len(fields) >= 2 {
+			return fields[0] + " " + strings.TrimPrefix(fields[1], "go")
+		}
+	}
+	return strings.TrimPrefix(version, "go")
 }
 
 // Client is a generic Rest client for making HTTP requests.
@@ -182,7 +196,7 @@ func (c *Client) NewRequest(method, path string, body io.Reader) (*http.Request,
 // Unmarshal the response body into v. If the response status code is 400 or
 // above, attempt to Unmarshal the response into an Error. Otherwise return
 // a generic http error.
-func (c *Client) Do(r *http.Request, v interface{}) error {
+func (c *Client) Do(r *http.Request, v any) error {
 	var res *http.Response
 	var err error
 	if c.Client == nil {

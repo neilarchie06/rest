@@ -18,6 +18,37 @@ import (
 	"github.com/kevinburke/rest/resterror"
 )
 
+func TestNormalizedGoVersion(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		version string
+		want    string
+	}{
+		{
+			name:    "release version",
+			version: "go1.25.1",
+			want:    "1.25.1",
+		},
+		{
+			name:    "development version with timestamp",
+			version: "devel go1.27-devel_affadc7997 Wed Apr 1 20:07:33 2026 -0700",
+			want:    "devel 1.27-devel_affadc7997",
+		},
+		{
+			name:    "development version without extra metadata",
+			version: "devel go1.27-devel_affadc7997",
+			want:    "devel 1.27-devel_affadc7997",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalizedGoVersion(tt.version)
+			assertEquals(t, got, tt.want)
+		})
+	}
+}
+
 func TestNilClientNoPanic(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("{}"))
