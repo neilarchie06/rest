@@ -111,7 +111,6 @@ func (c *Client) UpdateToken(newToken string) {
 var defaultDialer = &net.Dialer{
 	Timeout:   30 * time.Second,
 	KeepAlive: 30 * time.Second,
-	DualStack: true,
 }
 
 // DialSocket configures c to use the provided socket and http.Transport to
