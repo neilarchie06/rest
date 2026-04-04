@@ -1,24 +1,74 @@
-## 2.8
+# Changelog
 
-Replace Client.Token with Client.Token(). Add new SetToken() method to allow
-updating the token.
+This file summarizes the notable changes in each release.
 
-Replace handlers.Logger with the new `log/slog` package in the standard library.
-Log lines are not printed in color as a result.
+## 2.12.1 (Unreleased)
 
-## 2.6
+- Snapshot date: 2026-04-04.
+- Since `2.12.0`, trimmed development user-agent version strings so they stay
+  stable and readable.
+- Removed use of the deprecated `net.Dialer.DualStack` field from
+  `restclient`.
+- Refreshed CI coverage for newer Go versions and dependency updates.
+- Added daily Dependabot updates for GitHub Actions.
 
-Add Client.NewRequestWithContext to mirror http.NewRequestWithContext.
+## 2.12.0 - 2025-07-18
 
-## 2.5
+- Updated the `log15` dependency to v3.
 
-Add back DefaultErrorParser, NewBearerClient (these got missed in the move).
+## 2.11.0 - 2025-07-16
 
-## 2.3
+- Added a tag prefix in the release `Makefile` flow.
 
-Move rest.Client to new restclient package, and rest.Error to a new resterror
-package. If you would like to remove the 3rd party dependencies like log15 from
-your client code, change imports as follows:
+## 2.10.0 - 2025-07-16
+
+- Updated dependencies and refreshed tested Go versions.
+- Made the generated user-agent version string more Go-version compatible.
+
+## 2.9 - 2024-06-16
+
+- Replaced the writable `Client.Token` field with `Client.Token()` and
+  `SetToken()` so tokens can be updated safely at runtime.
+- Expanded CI to cover Go 1.22.
+
+## 2.8 - 2023-11-07
+
+- Switched logging from `log15` handlers to the standard library `log/slog`
+  package.
+- Log lines are no longer printed in color.
+- Updated module dependencies to support the logging change.
+
+## 2.7 - 2023-03-05
+
+- Threaded `context.Context` through `restclient` requests.
+- Tightened `restclient` behavior by panicking on a nil `*Client`.
+- Reduced string parsing overhead in `restclient`.
+- Updated CI to test on Go 1.19.
+
+## 2.6 - 2021-04-25
+
+- Added `Client.NewRequestWithContext` to mirror
+  `http.NewRequestWithContext`.
+- Updated CI for Go 1.16.
+
+## 2.5 - 2021-01-06
+
+- Restored the `DefaultErrorParser` alias that was missed in the package split.
+
+## 2.4 - 2021-01-05
+
+- Pointed README examples at the new package locations.
+- Restored the `NewBearerClient` alias and other compatibility aliases in
+  `rest`.
+
+## 2.3 - 2021-01-05
+
+- Split the code into new `restclient` and `resterror` packages while keeping
+  the old imports working through aliases.
+- Added GitHub Actions and updated the release target.
+
+If you would like to remove third-party dependencies like `log15` from your
+client code, change imports as follows:
 
 ```
 rest.Error => resterror.Error
@@ -27,26 +77,125 @@ rest.Client => restclient.Client
 rest.DefaultTransport => restclient.DefaultTransport
 ```
 
-The old imports should still work the same way as before thanks to aliasing.
+## 2.2 - 2020-04-29
 
-## 2.2
+- Added Bearer authentication support.
+- Stripped `Client.Base` from request paths when callers accidentally passed a
+  full URL.
+- Switched the lint target from `megacheck` to `staticcheck`.
 
-Support Bearer authentication.
+## 2.1 - 2018-04-23
 
-If the `path` value in `*Client.NewRequest()` begins with `Client.Base` (e.g.
-`client.NewRequest("GET", "https://api.github.com"), it will be stripped before
-making the request.
+- Removed Bazel from the test and release workflow.
+- Added the first project changelog and simplified release tooling.
 
-## 2.1
+## 2.0 - 2018-03-19
 
-Remove Bazel for testing purposes.
+- Renamed `rest.Error.StatusCode` to `rest.Error.Status`.
+- Removed the default `rest.Client` timeout so callers can control timeouts via
+  `context.Context`.
+- Added `rest.Gone` for HTTP 410 responses.
+- Dropped Bazel from the codebase.
 
-## 2.0
+## 1.3 - 2018-03-06
 
-- rest.Error.StatusCode has been renamed to rest.Error.Status to match the
-  change in the accepted RFC.
+- Added the `410 Gone` HTTP status helper.
 
-- rest.Client no longer has a default timeout. Use context.Context to specify
-  a timeout for HTTP requests.
+## 1.2 - 2018-02-22
 
-- Add rest.Gone for 410 responses.
+- Updated the `Error` struct.
+- Removed the default timeout behavior that was later carried into 2.0.
+- Fixed response body closing behavior after errors.
+- Updated the Shyp import path.
+
+## 1.1 - 2017-10-24
+
+- Moved tests and developer workflows over to Bazel.
+- Improved test logging, cache experiments, and build profiling.
+- Added more examples and documentation for `NewClient`.
+
+## 1.0 - 2017-03-18
+
+- Added transport examples to the README and test suite.
+- Added Go 1.8 to CI.
+- Defaulted the debug writer instead of panicking.
+
+## 0.18 - 2017-02-15
+
+- Stopped panicking when `http.Client` is nil.
+
+## 0.17 - 2017-02-15
+
+- Added `DEBUG_HTTP_TRAFFIC` support as a `RoundTripper`.
+- Made `RegisterHandler` more generic.
+- Added `staticcheck`, removed Go 1.5 from CI, and refreshed project metadata.
+
+## 0.16 - 2016-11-07
+
+- Reduced per-request user-agent allocations.
+- Improved release tooling and refreshed the license metadata.
+
+## 0.15 - 2016-10-20
+
+- Added support for custom `ErrorParser` implementations.
+- Started running the race detector before releases.
+
+## 0.14 - 2016-10-20
+
+- Corrected `401 Unauthorized` status handling.
+
+## 0.13 - 2016-10-20
+
+- Allowed `RegisterHandler(code, nil)` to remove a handler.
+
+## 0.12 - 2016-10-19
+
+- Added support for registering custom error handlers.
+- Expanded CI beyond `go vet`, including a Go 1.7 context-specific test.
+
+## 0.11 - 2016-10-18
+
+- Added a newline before debug messages for cleaner logging.
+
+## 0.10 - 2016-10-17
+
+- Populated the forbidden error ID when it was missing.
+
+## 0.9 - 2016-10-12
+
+- Added Go runtime version and architecture information to the user-agent.
+
+## 0.8 - 2016-10-11
+
+- Added an `Unauthorized` handler.
+
+## 0.7 - 2016-10-10
+
+- Added a `204 No Content` handler.
+
+## 0.6 - 2016-09-22
+
+- Sent additional request headers by default.
+
+## 0.5 - 2016-09-19
+
+- Expanded the package documentation.
+
+## 0.4 - 2016-09-19
+
+- Added the README and package-level documentation.
+
+## 0.3 - 2016-09-03
+
+- Added Travis CI, formatting and vet checks, and a release target.
+
+## 0.2 - 2016-07-15
+
+- Added a `404 NotFound` handler.
+- Returned `nil` for `204 No Content` responses.
+
+## 0.1 - 2016-07-15
+
+- Initial release of the REST client.
+
+Thanks to `burkebot` for the recent maintenance updates.
