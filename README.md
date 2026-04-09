@@ -26,6 +26,46 @@ Use the `restclient.Transport` as the `http.Transport` to easily inspect the raw
 HTTP request and response. Set `DEBUG_HTTP_TRAFFIC=true` in your environment to
 dump HTTP requests and responses to stderr.
 
+### Inspecting Response Headers (e.g. Rate Limits)
+
+`restclient.Client.Do` consumes the response body and returns just the
+decoded value (or an error parsed by `ErrorParser`), so it does not surface
+response headers to its caller. When you need to read headers from *every*
+response — for example, to track API rate limit headers like GitHub's
+`X-RateLimit-Remaining` / `X-RateLimit-Reset` — wrap the underlying
+`http.RoundTripper` instead of changing `Client`. The `RoundTripper` sees
+every `*http.Response` before `Do` consumes the body, and the headers are
+already parsed at that point, so it's the right place to record them.
+
+```go
+type rateLimitTransport struct {
+    base http.RoundTripper
+    last atomic.Pointer[RateLimit] // your own snapshot type
+}
+
+func (t *rateLimitTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+    resp, err := t.base.RoundTrip(req)
+    if resp != nil {
+        if rl := parseRateLimit(resp.Header); rl != nil {
+            t.last.Store(rl)
+        }
+    }
+    return resp, err
+}
+
+rc := restclient.NewBearerClient(token, "https://api.github.com")
+rlt := &rateLimitTransport{base: rc.Client.Transport}
+rc.Client.Transport = rlt
+// ... now rlt.last.Load() always reflects the most recent response.
+```
+
+This pattern works for successful responses, redirects, and errors alike,
+and stacks cleanly with other transport-level middleware (retries, debug
+logging, etc.). Pair it with a custom `ErrorParser` if you also want to
+return a typed error (e.g. `RateLimitError`) when the limit is exhausted —
+the parser receives the same `*http.Response` and can read the same
+headers.
+
 ### Defining Custom Error Responses
 
 `rest` exposes a number of HTTP error handlers - for example,
